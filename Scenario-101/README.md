@@ -86,12 +86,24 @@ kubectl logs -f $POD_NAME
 
 - Run functional test
 ```
-# Get endpoint url of nginx service
-kubectl get services
+# Get port nginx service
+lzhshen@k8s-test-203101:~/challenges-kubernetes/Scenario-101$ kubectl get service
+NAME               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+kubernetes         ClusterIP   10.47.240.1     <none>        443/TCP        5d
+my-nginx-service   NodePort    10.47.242.202   <none>        80:31817/TCP   25m
 
-# Send requests
-service_url="$(minikube service my-nginx-service --url)"
-for((i=0; i< 5; i++)); do { curl -I "$service_url";}; done
+# Add firefox rules for the port
+gcloud compute firewall-rules create allow-101-nginx-nodeport --allow=tcp:31817
+
+# Get external IP
+lzhshen@k8s-test-203101:~/challenges-kubernetes/Scenario-101$ gcloud compute instances list
+NAME                               ZONE               MACHINE_TYPE   PREEMPTIBLE  INTERNAL_IP  EXTERNAL_IP    STATUS
+gke-k0-default-pool-000b8a1f-1n8k  asia-southeast1-a  n1-standard-1               10.148.0.2   35.198.240.69  RUNNING
+gke-k0-default-pool-000b8a1f-5nwr  asia-southeast1-a  n1-standard-1               10.148.0.4   35.198.221.59  RUNNING
+gke-k0-default-pool-000b8a1f-6950  asia-southeast1-a  n1-standard-1               10.148.0.3   35.198.206.72  RUNNING
+
+# In browser, input http://35.198.240.69:31817 and then nginx welcome page should be shown
+
 ```
 
 Destroy env:
